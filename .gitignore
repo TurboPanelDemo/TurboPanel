@@ -1,0 +1,21 @@
+web/storage/installed
+
+web/config.php
+web/turbo-config.ini
+
+
+# vitepress build output
+**/.vitepress/dist/
+**/.vitepress/cache/
+/docs/node_modules/
+
+
+./idea/*
+.idea/webServers.xml
+.idea/vcs.xml
+.idea/sshConfigs.xml
+.idea/TurboPanel.iml
+.idea/phpunit.xml
+.idea/php.xml
+.idea/modules.xml
+.idea/deployment.xml

@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Models;
+
+use App\ApiSDK\TurboApiSDK;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
+
+class Customer extends Authenticatable
+{
+    use HasApiTokens;
+    use HasFactory;
+
+    protected $fillable = [
+        'turbo_server_id',
+        'name',
+        'username',
+        'password',
+        'email',
+        'phone',
+        'address',
+        'city',
+        'state',
+        'zip',
+        'country',
+        'company',
+    ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if ($model->turbo_server_id > 0) {
+                $turboServer = TurboServer::where('id', $model->turbo_server_id)->first();
+                if ($turboServer) {
+                    $turboApiSDK = new TurboApiSDK($turboServer->ip, 8443, $turboServer->username, $turboServer->password);
+                    $createCustomer = $turboApiSDK->createCustomer([
+                        'name' => $model->name,
+                        'username' => $model->username,
+                        'password' => $model->password,
+                        'email' => $model->email,
+                        'phone' => $model->phone,
+                        'address' => $model->address,
+                        'city' => $model->city,
+                        'state' => $model->state,
+                        'zip' => $model->zip,
+                        'country' => $model->country,
+                        'company' => $model->company,
+                    ]);
+                    if (isset($createCustomer['data']['customer']['id'])) {
+                        $model->external_id = $createCustomer['data']['customer']['id'];
+                    } else {
+                        return false;
+                    }
+
+                } else {
+                    return false;
+                }
+            }
+        });
+
+        static::deleting(function ($model) {
+
+        });
+
+    }
+
+    public function hostingSubscriptions()
+    {
+        return $this->hasMany(HostingSubscription::class);
+    }
+
+    public function canBeImpersonated()
+    {
+        return true;
+    }
+
+}
